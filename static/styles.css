@@ -103,3 +103,9 @@ main img
     /* Add a grey background color to the table header and on hover */
     background-color: #f1f1f1;
 }
+
+#videoElement {
+	width: 500px;
+	height: 375px;
+	background-color: #666;
+}
