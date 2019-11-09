@@ -99,13 +99,18 @@ main img
     border-bottom: 1px solid #ddd;
 }
 
-#myTable tr.header, #myTable tr:hover {
-    /* Add a grey background color to the table header and on hover */
-    background-color: #f1f1f1;
-}
 
-#videoElement {
+.Scanner {
 	width: 500px;
 	height: 375px;
 	background-color: #666;
+}
+
+#videoElement {
+    display: block;
+}
+
+#myCanvas {
+    background-color: black;
+    display: None;
 }

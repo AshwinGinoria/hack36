@@ -1,22 +1,45 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Log In
+    Add Item to Cart
 {% endblock %}
 
 {% block main %}
-    <video id="videoElement" autoplay="true"></video>
+    <p>
+        <button onclick="snapshot();">Take Snapshot</button> 
+    </p>
+    <div class="container-fluid" style="text-align: center;">
+        <video class="Scanner" id="videoElement" autoplay="true"></video>
+        <canvas class="Scanner" id="myCanvas"></canvas>  
+    </div>
     <script>
         var video = document.querySelector("#videoElement");
+        var canvas, ctx;
 
         if (navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(function (stream) {
             video.srcObject = stream;
             })
-            .catch(function (err0r) {
+            .catch(function (error) {
             console.log("Something went wrong!");
             });
+        }
+        else {
+            console.log("getUserMedia Not Found");
+        };
+        //---------------------
+        // TAKE A SNAPSHOT CODE
+        //---------------------
+    
+        function snapshot() {
+            console.log("Taking SnapShots");
+            canvas = document.getElementById("myCanvas");
+            video.style.display = "none";
+            canvas.style.display = "block";
+            ctx = canvas.getContext('2d');
+             // Draws current image from the video element into the canvas
+            ctx.drawImage(video, 0,0, canvas.width, canvas.height);
         };
     </script>
 {% endblock %}
