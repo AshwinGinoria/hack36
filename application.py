@@ -43,7 +43,10 @@ COLS = ['uniq_id','name','product_category_tree','retail_price','price','image_l
 for row in ITEMS_CURSOR:
     new_val = {}
     for i in range(len(row)):
-        new_val[COLS[i]] = row[i]
+        if i != 5:
+            new_val[COLS[i]] = row[i]
+        else:
+            new_val[COLS[i]] = row[i].replace('{','').replace('}','').replace('"','').replace('[','').replace(']','').split(',')
     ITEMS_LIST.append(new_val)
 
 @app.route("/")
@@ -56,7 +59,58 @@ def index():
 @login_required
 def scan():
     """Scan and add item to cart"""
-    
+
+    if request.method == "POST":
+
+        Item_id = request.form.get("Item_id")
+        Number = request.form.get("Number")
+        User_id = session["user_id"]
+
+        # Query the database for Item_ID
+        cursor = db.execute("SELECT * FROM items WHERE uniq_id = ?",
+                                (Item_id,))
+        
+        # Reading Result
+        rows = []
+        for row in cursor:
+            rows.append(row)
+        
+        # Error Check
+        if (len(rows) == 0):
+            return apology("Item Not Found", 402)
+        
+        # Reading User Data
+        cursor = db.execute("SELECT * FROM users WHERE id = ?",
+                            (User_id,))
+        
+        rows = []
+        for row in cursor:
+            rows.append(row)
+        
+        cart_data = rows[0][3]
+
+        data = cart_data.split(',')
+        flag = 1
+        cart_data = ""
+        for i in data[:-1]:
+            k = i.split(":")
+            if k[0] == Item_id :
+                k[1] = int(k[1]) + int(Number)
+                cart_data = cart_data + k[0] + ":"+ str(k[1]) + ','
+                flag = 0
+            else:
+                cart_data = cart_data + i + ','
+        if flag:
+            cart_data = cart_data + Item_id + ":" + str(Number) + ','
+
+        # Updating Database
+        db.execute("UPDATE users SET cart=? WHERE id=?",(
+                    cart_data,
+                    User_id,))
+        conn.commit()
+        
+        return redirect("/")
+
     return render_template("scan.html")
 
 @app.route("/cart")
@@ -64,7 +118,46 @@ def scan():
 def cart():
     """Show users cart"""
 
-    return apology("TODO")
+    User_id = session["user_id"]
+
+    cursor = db.execute("SELECT * FROM users WHERE id = ?",
+                                (User_id,))
+        
+    # Reading Result
+    rows = []
+    for row in cursor:
+        rows.append(row)
+    cart_data = rows[0][3]
+
+    new_dat = ""
+    new_dict = {}
+    for data in cart_data.split(",")[:-1]:
+        new_dat = new_dat + "'" + data.split(':')[0] + "'" + ","
+        new_dict[data.split(":")[0]] = int(data.split(":")[1])
+    new_dat = new_dat[:-1]
+    
+    # If Cart Is Empty
+    if (cart_data == ""):
+        return apology("No Item Selected", 402)
+
+    # Reading Items from Table
+    cursor = db.execute("SELECT * FROM items WHERE uniq_id IN (%s)" %(new_dat))
+
+    items = []
+    total = 0
+    for row in cursor:
+        new_val = {}
+        for i in range(len(row)):
+            if i != 5:
+                new_val[COLS[i]] = row[i]
+            else:
+                new_val[COLS[i]] = row[i].replace('{','').replace('}','').replace('"','').replace('[','').replace(']','').split(',')
+        new_val["number"] = new_dict[new_val["uniq_id"]]
+
+        total += new_val["number"] * float(new_val["price"])
+        items.append(new_val)
+
+    return render_template("cart.html", items=items, total=round(total,2))
 
 
 @app.route("/login", methods=["GET", "POST"])

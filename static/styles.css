@@ -99,7 +99,6 @@ main img
     border-bottom: 1px solid #ddd;
 }
 
-
 .Scanner {
 	width: 500px;
 	height: 375px;
@@ -114,3 +113,21 @@ main img
     background-color: black;
     display: None;
 }
+
+.qrcode-text {
+    padding-right: 1.7em;
+    margin-right: 0;
+    vertical-align: middle;
+  }
+  
+  .qrcode-text + .qrcode-text-btn {
+    width: 1.7em;
+    margin-left: -1.7em;
+    vertical-align: middle;
+  }
+  .qrcode-text {
+    box-sizing: border-box;
+    vertical-align: middle;
+  }
+  
+    
